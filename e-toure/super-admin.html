@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-TOURÉ - Super Admin</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1A237E">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
+</head>
+<body>
+    <button class="menu-toggle-pro" onclick="toggleMenuPro()">☰</button>
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar-pro">
+            <div class="logo"><img src="assets/logo-e-toure-light.svg" alt="E-TOURÉ — Votre commerce, maîtrisé."></div>
+            <nav>
+                <a href="index.html">📊 Dashboard</a>
+                <a href="dettes.html">💰 Dettes</a>
+                <a href="super-admin.html" class="active">👑 Super Admin</a>
+                <a href="#" onclick="deconnexion()" style="color: #ff8a80; margin-top: auto;">🚪 Déconnexion</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <h1>Super Administration</h1>
+            </header>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nom de la boutique</th>
+                            <th>Rôle</th>
+                            <th>Date d'inscription</th>
+                            <th>Statut Premium</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="liste-profils">
+                        <!-- Rempli par le JS -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await verifierConnexion();
+            if (!user) return;
+
+            // Vérifier si l'utilisateur est bien super_admin
+            const { data: profil, error } = await supabaseClient
+                .from('profils')
+                .select('role')
+                .eq('user_id', user.id)
+                .single();
+
+            if (error || !profil || profil.role !== 'super_admin') {
+                alert("Accès refusé. Vous n'êtes pas Super Admin.");
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Charger tous les profils
+            const { data: profils, error: errProfils } = await supabaseClient
+                .from('profils')
+                .select('user_id, nom_boutique, role, created_at, est_premium, date_expiration_premium')
+                .order('created_at', { ascending: false });
+
+            if (errProfils) {
+                console.error("Impossible de charger les profils :", errProfils);
+                alert("Impossible de charger la liste des profils. Vérifiez la configuration Supabase.");
+                return;
+            }
+
+            afficherProfils(profils || []);
+        });
+
+        function afficherProfils(profils) {
+            const tbody = document.getElementById('liste-profils');
+            if (profils.length === 0) {
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 5;
+                cell.style.textAlign = 'center';
+                cell.textContent = 'Aucun profil.';
+                row.append(cell);
+                tbody.replaceChildren(row);
+                return;
+            }
+
+            tbody.replaceChildren(...profils.map(profil => {
+                const row = document.createElement('tr');
+                const estPremium = profil.est_premium === true
+                    && profil.date_expiration_premium
+                    && new Date(profil.date_expiration_premium).getTime() > Date.now();
+
+                const boutique = document.createElement('td');
+                boutique.dataset.label = 'Boutique';
+                const nomBoutique = document.createElement('strong');
+                nomBoutique.textContent = profil.nom_boutique || 'Non renseigné';
+                boutique.append(nomBoutique);
+
+                const role = document.createElement('td');
+                role.dataset.label = 'Rôle';
+                role.textContent = profil.role === 'super_admin' ? '👑 Super Admin' : '🏪 Commerçant';
+
+                const dateInscription = document.createElement('td');
+                dateInscription.dataset.label = 'Date';
+                dateInscription.textContent = profil.created_at
+                    ? new Date(profil.created_at).toLocaleDateString('fr-FR')
+                    : '—';
+
+                const statut = document.createElement('td');
+                statut.dataset.label = 'Statut';
+                const badge = document.createElement('span');
+                badge.textContent = estPremium ? '⭐ Premium' : 'Gratuit / Essai';
+                badge.style.cssText = `background:${estPremium ? '#e8f5e9' : '#fff3e0'};color:${estPremium ? '#2e7d32' : '#f39c12'};padding:0.3rem 0.6rem;border-radius:20px;font-size:0.8rem;font-weight:bold;`;
+                if (estPremium) {
+                    badge.title = `Expire le ${new Date(profil.date_expiration_premium).toLocaleDateString('fr-FR')}`;
+                }
+                statut.append(badge);
+
+                const actions = document.createElement('td');
+                actions.dataset.label = 'Actions';
+                if (profil.role === 'super_admin') {
+                    const note = document.createElement('span');
+                    note.textContent = 'Action non requise';
+                    note.style.cssText = 'color:#888;font-size:0.8rem;';
+                    actions.append(note);
+                } else {
+                    const bouton = document.createElement('button');
+                    bouton.type = 'button';
+                    bouton.className = estPremium ? 'btn-outline' : 'btn-primary';
+                    bouton.textContent = estPremium ? 'Désactiver' : 'Activer Premium';
+                    bouton.style.cssText = `padding:0.4rem 0.8rem;font-size:0.8rem;${estPremium ? 'border-color:#d32f2f;color:#d32f2f;' : ''}`;
+                    bouton.addEventListener('click', () => modifierStatutPremium(profil.user_id, !estPremium, bouton));
+                    actions.append(bouton);
+                }
+
+                row.append(boutique, role, dateInscription, statut, actions);
+                return row;
+            }));
+        }
+
+        async function modifierStatutPremium(userId, activer, bouton) {
+            const texteInitial = bouton.textContent;
+            bouton.disabled = true;
+            bouton.textContent = 'Mise à jour...';
+
+            const { error } = await supabaseClient.rpc('admin_definir_premium', {
+                p_user_id: userId,
+                p_actif: activer
+            });
+
+            if (error) {
+                console.error("Impossible de modifier le statut Premium :", error);
+                alert("Le statut Premium n'a pas pu être modifié. Vérifiez que la migration est appliquée et réessayez.");
+                bouton.disabled = false;
+                bouton.textContent = texteInitial;
+                return;
+            }
+
+            const { data: profils, error: erreurProfils } = await supabaseClient
+                .from('profils')
+                .select('user_id, nom_boutique, role, created_at, est_premium, date_expiration_premium')
+                .order('created_at', { ascending: false });
+
+            if (erreurProfils) {
+                console.error("Statut modifié, mais impossible de recharger les profils :", erreurProfils);
+                alert("Le statut a été modifié, mais la liste n'a pas pu être actualisée. Rechargez la page.");
+                bouton.disabled = false;
+                bouton.textContent = texteInitial;
+                return;
+            }
+
+            afficherProfils(profils || []);
+        }
+    </script>
+</body>
+</html>

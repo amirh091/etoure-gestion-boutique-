@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-TOURÉ - Rapports</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1A237E">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <button class="menu-toggle-pro" onclick="toggleMenuPro()">☰</button>
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar-pro">
+            <div class="logo"><img src="assets/logo-e-toure-light.svg" alt="E-TOURÉ — Votre commerce, maîtrisé."></div>
+            <nav>
+                <a href="index.html">📊 Dashboard</a>
+                <a href="produits.html">📦 Produits</a>
+                <a href="ventes.html">🛒 Point de Vente</a>
+                <a href="dettes.html">💰 Dettes</a>
+                <a href="rapports.html" class="active">📈 Rapports</a>
+                <a href="parametres.html">⚙️ Paramètres</a>
+                <a href="#" onclick="deconnexion()" style="color: #ff8a80; margin-top: auto;">🚪 Déconnexion</a>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <header>
+                <h1>Rapports & Statistiques</h1>
+            </header>
+
+            <!-- CARTES DE RÉSUMÉ -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <h3>Chiffre d'Affaires Total</h3>
+                    <p class="stat-value" id="total-ca">0 FCFA</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Nombre total de ventes</h3>
+                    <p class="stat-value" id="total-ventes">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Panier Moyen</h3>
+                    <p class="stat-value" id="panier-moyen">0 FCFA</p>
+                </div>
+            </section>
+
+            <!-- GRAPHIQUE DES PRODUITS LES PLUS VENDUS -->
+            <section class="chart-section" style="margin-top: 2rem;">
+                <h2>Top 5 des produits les plus vendus</h2>
+                <div style="max-width: 600px; margin: 0 auto;">
+                    <canvas id="topProduitsChart"></canvas>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/rapports.js"></script>
+</body>
+</html>

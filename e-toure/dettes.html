@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>E-TOURÉ - Dettes</title>
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#1A237E" />
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <button class="menu-toggle-pro" onclick="toggleMenuPro()">☰</button>
+    <div class="app-container">
+      <aside class="sidebar" id="sidebar-pro">
+        <div class="logo"><img src="assets/logo-e-toure-light.svg" alt="E-TOURÉ — Votre commerce, maîtrisé."></div>
+        <nav>
+          <a href="index.html">📊 Dashboard</a>
+          <a href="produits.html">📦 Produits</a>
+          <a href="ventes.html">🛒 Point de Vente</a>
+          <a href="dettes.html" class="active">💰 Dettes</a>
+          <a href="rapports.html">📈 Rapports</a>
+          <a href="parametres.html">⚙️ Paramètres</a>
+          <a
+            href="#"
+            onclick="deconnexion()"
+            style="color: #ff8a80; margin-top: auto"
+            >🚪 Déconnexion</a
+          >
+        </nav>
+      </aside>
+
+      <main class="main-content">
+        <header>
+          <h1>Gestion des Dettes</h1>
+        </header>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Date</th>
+                <th>Total Vente</th>
+                <th>Reste à payer</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="liste-dettes">
+              <!-- Rempli par le JS -->
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", async () => {
+        const user = await verifierConnexion();
+        if (!user) return;
+
+        await afficherBoutonAdmin(user);
+        await chargerDettes(user.id);
+      });
+
+      async function chargerDettes(userId) {
+        const { data, error } = await supabaseClient
+          .from("ventes")
+          .select("id, user_id, nom_client, date_vente, total, montant_restant, est_payee")
+          .eq("user_id", userId)
+          .gt("montant_restant", 0)
+          .order("date_vente", { ascending: false });
+
+        const tbody = document.getElementById("liste-dettes");
+        if (error) {
+          console.error("Impossible de charger les dettes :", error);
+          const row = document.createElement("tr");
+          const cell = document.createElement("td");
+          cell.colSpan = 5;
+          cell.style.cssText = "text-align:center; color:#b71c1c;";
+          cell.textContent = `Erreur lors du chargement des dettes : ${error.message}. Vérifiez les autorisations de lecture Supabase (RLS).`;
+          row.append(cell);
+          tbody.replaceChildren(row);
+          return;
+        }
+
+        if (!Array.isArray(data) || data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Aucune dette avec un montant restant. Si une vente à crédit vient d’être créée, vérifiez qu’elle a été synchronisée et que son montant restant est supérieur à zéro.</td></tr>`;
+          return;
+        }
+
+        tbody.replaceChildren(...data.map(vente => {
+          const row = document.createElement("tr");
+          const client = document.createElement("td");
+          client.dataset.label = "Client";
+          const nomClient = document.createElement("strong");
+          nomClient.textContent = vente.nom_client || "Client non renseigné";
+          client.append(nomClient);
+
+          const date = document.createElement("td");
+          date.dataset.label = "Date";
+          date.textContent = vente.date_vente
+            ? new Date(vente.date_vente).toLocaleDateString("fr-FR")
+            : "—";
+
+          const total = document.createElement("td");
+          total.dataset.label = "Total";
+          total.textContent = `${Number(vente.total || 0).toLocaleString("fr-FR")} FCFA`;
+
+          const reste = document.createElement("td");
+          reste.dataset.label = "Reste";
+          reste.style.cssText = "color:#d32f2f;font-weight:bold;";
+          reste.textContent = `${Number(vente.montant_restant || 0).toLocaleString("fr-FR")} FCFA`;
+
+          const action = document.createElement("td");
+          action.dataset.label = "Action";
+          const bouton = document.createElement("button");
+          bouton.type = "button";
+          bouton.className = "btn-primary";
+          bouton.style.cssText = "padding:0.4rem 0.8rem;font-size:0.8rem;";
+          bouton.textContent = "Encaisser";
+          bouton.addEventListener("click", () => ouvrirRemboursement(vente.id, Number(vente.montant_restant)));
+          action.append(bouton);
+
+          row.append(client, date, total, reste, action);
+          return row;
+        }));
+      }
+
+      window.ouvrirRemboursement = async (venteId, resteAPayer) => {
+        try {
+          if (await estModeDemo()) {
+            alert("Mode démo : Les remboursements sont désactivés.");
+            return;
+          }
+        } catch (error) {
+          console.error("Impossible de vérifier le mode démo :", error);
+          alert("Impossible de vérifier les autorisations. Le remboursement est annulé ; réessayez.");
+          return;
+        }
+
+        const user = await verifierConnexion();
+        if (!user) return;
+
+        const montant = prompt(
+          `Combien le client a-t-il payé ? (Reste à payer : ${resteAPayer} FCFA)`,
+        );
+        if (montant === null) return; // Annulé
+        const montantPaye = parseInt(montant);
+
+        if (
+          isNaN(montantPaye) ||
+          montantPaye <= 0 ||
+          montantPaye > resteAPayer
+        ) {
+          return alert("Montant invalide.");
+        }
+
+        const nouveauReste = resteAPayer - montantPaye;
+        const estPayee = nouveauReste <= 0;
+
+        // 1. Enregistrer le remboursement avec l'utilisateur authentifié
+        const { error: errRemb } = await supabaseClient
+          .from("remboursements")
+          .insert([{ vente_id: venteId, montant: montantPaye, user_id: user.id }]);
+
+        if (errRemb) {
+          alert("Erreur lors de l'enregistrement du remboursement : " + errRemb.message);
+          return;
+        }
+
+        // 2. Mettre à jour la vente
+        const { error: errVente } = await supabaseClient
+          .from("ventes")
+          .update({
+            montant_restant: nouveauReste,
+            est_payee: estPayee,
+          })
+          .eq("id", venteId)
+          .eq("user_id", user.id);
+
+        if (errVente) {
+          alert("Erreur lors de la mise à jour de la dette : " + errVente.message);
+          return;
+        }
+
+        alert("Paiement enregistré !");
+
+        // 3. Recharger la liste
+        await chargerDettes(user.id);
+      };
+    </script>
+  </body>
+</html>

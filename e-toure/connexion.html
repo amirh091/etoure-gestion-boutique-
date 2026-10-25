@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-TOURÉ - Connexion</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1A237E">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
+    <style>
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: var(--bg-body);
+        }
+        .auth-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .auth-card h2 { margin-bottom: 0.5rem; color: var(--secondary); }
+        .auth-card p { color: var(--text-muted); margin-bottom: 2rem; font-size: 0.9rem; }
+        .auth-card input {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .auth-card button {
+            width: 100%;
+            padding: 0.8rem;
+            font-size: 1rem;
+        }
+        .password-wrapper {
+            position: relative;
+        }
+        .password-wrapper input {
+            padding-right: 2.8rem;
+            box-sizing: border-box;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0;
+            line-height: 1;
+            opacity: 0.6;
+        }
+        .toggle-password:hover {
+            opacity: 1;
+        }
+        .toggle-auth {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        .toggle-auth a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .auth-notification {
+            position: fixed;
+            z-index: 3000;
+            top: max(1rem, env(safe-area-inset-top));
+            left: 50%;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            width: min(26rem, calc(100% - 2rem));
+            padding: 1rem 1.25rem;
+            border: 1px solid #a5d6a7;
+            border-radius: 12px;
+            background: #f1f8f2;
+            color: #1b5e20;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.16);
+            font-size: 0.95rem;
+            line-height: 1.45;
+            opacity: 0;
+            transform: translate(-50%, -0.75rem);
+            transition: opacity 180ms ease, transform 180ms ease;
+        }
+        .auth-notification[hidden] {
+            display: none;
+        }
+        .auth-notification.is-visible {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+        .auth-notification.is-error {
+            border-color: #ef9a9a;
+            background: #fff5f5;
+            color: #b71c1c;
+        }
+        .auth-notification-icon {
+            display: grid;
+            flex: 0 0 1.75rem;
+            width: 1.75rem;
+            height: 1.75rem;
+            place-items: center;
+            border-radius: 50%;
+            background: #2e7d32;
+            color: #fff;
+            font-weight: 700;
+        }
+        .auth-notification.is-error .auth-notification-icon {
+            background: #c62828;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .auth-notification {
+                transition: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="logo" style="margin: 0 auto 1.5rem; width: min(100%, 320px);">
+                <img src="assets/logo-e-toure.svg" alt="E-TOURÉ — Votre commerce, maîtrisé." style="display: block; width: 100%; height: auto;">
+            </div>
+            <h2 id="titre-auth">Connexion</h2>
+            <p id="sous-titre-auth">Accédez à votre espace de gestion.</p>
+
+            <form id="form-auth">
+                <input type="email" id="email" placeholder="Votre adresse email" required>
+                <div style="width: 100%; margin-bottom: 1rem;">
+                    <input type="password" id="password" placeholder="Votre mot de passe" required minlength="6"
+                           style="width: 100%; padding: 0.8rem; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; box-sizing: border-box;">
+
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                        <input type="checkbox" id="afficher-mdp" onchange="togglePassword()" style="width: auto; margin: 0; cursor: pointer;">
+                        <label for="afficher-mdp" style="font-size: 0.85rem; color: #666; cursor: pointer; user-select: none;">Afficher le mot de passe</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary" id="btn-auth">Se connecter</button>
+            </form>
+
+            <div style="margin-top: 1rem; text-align: center;">
+                <p style="color: #888; font-size: 0.85rem; margin-bottom: 0.5rem;">— ou —</p>
+                <button type="button" id="btn-demo" class="btn-outline" style="width: 100%; border-color: var(--primary); color: var(--primary);">
+                    🚀 Voir la démo (Sans inscription)
+                </button>
+            </div>
+
+            <div class="toggle-auth">
+                <span id="texte-toggle">Pas encore de compte ? </span>
+                <a onclick="changerMode()">S'inscrire</a>
+            </div>
+        </div>
+    </div>
+    <div id="notification-auth" class="auth-notification" role="status" aria-live="polite" aria-atomic="true" hidden>
+        <span class="auth-notification-icon" aria-hidden="true">✓</span>
+        <span id="notification-auth-message"></span>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script>
+        let mode = 'connexion';
+        let notificationAuthTimeout;
+        let notificationAuthHideTimeout;
+
+        function afficherNotificationAuth(message, type = 'success') {
+            const notification = document.getElementById('notification-auth');
+            const icone = notification.querySelector('.auth-notification-icon');
+            clearTimeout(notificationAuthTimeout);
+            clearTimeout(notificationAuthHideTimeout);
+            notification.classList.toggle('is-error', type === 'error');
+            notification.setAttribute('role', type === 'error' ? 'alert' : 'status');
+            notification.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
+            icone.textContent = type === 'error' ? '!' : '✓';
+            document.getElementById('notification-auth-message').textContent = message;
+            notification.hidden = false;
+            notification.classList.remove('is-visible');
+            requestAnimationFrame(() => notification.classList.add('is-visible'));
+
+            notificationAuthTimeout = setTimeout(() => {
+                notification.classList.remove('is-visible');
+                notificationAuthHideTimeout = setTimeout(() => {
+                    notification.hidden = true;
+                }, 200);
+            }, 4500);
+        }
+
+        function togglePassword() {
+            const input = document.getElementById('password');
+            const checkbox = document.getElementById('afficher-mdp');
+            input.type = checkbox.checked ? 'text' : 'password';
+        }
+
+        // Si l'utilisateur est déjà connecté, on l'envoie directement au dashboard
+        (async () => {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) window.location.href = 'index.html';
+        })();
+
+        function changerMode() {
+            mode = mode === 'connexion' ? 'inscription' : 'connexion';
+            document.getElementById('titre-auth').textContent = mode === 'connexion' ? 'Connexion' : 'Inscription';
+            document.getElementById('sous-titre-auth').textContent = mode === 'connexion' ? 'Accédez à votre espace de gestion.' : 'Créez votre compte commerçant.';
+            document.getElementById('btn-auth').textContent = mode === 'connexion' ? 'Se connecter' : "S'inscrire";
+            document.getElementById('texte-toggle').textContent = mode === 'connexion' ? 'Pas encore de compte ? ' : 'Déjà un compte ? ';
+        }
+
+        document.getElementById('form-auth').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-auth');
+            btn.textContent = "Chargement...";
+            btn.disabled = true;
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (mode === 'inscription') {
+                const { data, error } = await supabaseClient.auth.signUp({ email, password });
+                if (error) afficherNotificationAuth("Erreur : " + error.message, 'error');
+                else if (!data.session) afficherNotificationAuth("Inscription réussie. Consultez votre boîte e-mail pour confirmer votre adresse.");
+                else afficherNotificationAuth("Compte créé avec succès. Vous pouvez maintenant vous connecter.");
+            } else {
+                const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) afficherNotificationAuth("Email ou mot de passe incorrect.", 'error');
+                else window.location.href = 'index.html';
+            }
+
+            btn.textContent = mode === 'connexion' ? 'Se connecter' : "S'inscrire";
+            btn.disabled = false;
+        });
+
+        document.getElementById('btn-demo').addEventListener('click', lancerDemo);
+
+        async function lancerDemo() {
+            const btn = document.getElementById('btn-demo');
+            btn.textContent = 'Connexion à la démo...';
+            btn.disabled = true;
+
+            try {
+                const { data, error } = await supabaseClient.functions.invoke('demo-login');
+                if (error) throw error;
+                const session = data?.session || data;
+                if (!session?.access_token || !session?.refresh_token) {
+                    throw new Error('La fonction de démonstration a retourné une session invalide.');
+                }
+
+                const { error: erreurSession } = await supabaseClient.auth.setSession({
+                    access_token: session.access_token,
+                    refresh_token: session.refresh_token
+                });
+                if (erreurSession) throw erreurSession;
+
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Échec de la connexion à la démo :', error);
+                const statut = error?.context?.status;
+                const message = statut === 404
+                    ? "Le service de démo n’est pas encore déployé sur Supabase. Contactez l’administrateur."
+                    : statut === 403
+                        ? "Cette adresse du site n’est pas autorisée pour la démo. Vérifiez DEMO_ALLOWED_ORIGIN dans Supabase."
+                        : statut === 503
+                            ? "Le service de démo est déployé, mais son compte ou ses secrets Supabase ne sont pas correctement configurés."
+                            : "La démo est temporairement indisponible. Veuillez réessayer plus tard.";
+                afficherNotificationAuth(message, 'error');
+                btn.textContent = '🚀 Voir la démo (Sans inscription)';
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

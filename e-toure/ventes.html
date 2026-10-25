@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-TOURÉ - Point de Vente</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1A237E">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
+</head>
+<body>
+    <button class="menu-toggle-pro" onclick="toggleMenuPro()">☰</button>
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar-pro">
+            <div class="logo"><img src="assets/logo-e-toure-light.svg" alt="E-TOURÉ — Votre commerce, maîtrisé."></div>
+            <nav>
+                <a href="index.html">📊 Dashboard</a>
+                <a href="produits.html">📦 Produits</a>
+                <a href="ventes.html" class="active">🛒 Point de Vente</a>
+                <a href="dettes.html">💰 Dettes</a>
+                <a href="rapports.html">📈 Rapports</a>
+                <a href="parametres.html">⚙️ Paramètres</a>
+                <a href="#" onclick="deconnexion()" style="color: #ff8a80; margin-top: auto;">🚪 Déconnexion</a>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <header>
+                <h1>Point de Vente</h1>
+            </header>
+
+            <div class="pos-layout">
+                <!-- SECTION PRODUITS DISPONIBLES -->
+                <section class="pos-produits">
+                    <div class="pos-search-row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                        <input type="text" id="recherche-pos" placeholder="Rechercher un produit ou scanner un code..." class="search-bar-pos" style="margin-bottom: 0;">
+                        <button type="button" onclick="ouvrirScanner()" class="btn-primary" style="padding: 0 1rem; white-space: nowrap;">📷 Scanner</button>
+                    </div>
+                    <div class="grid-pos" id="grille-pos">
+                        <!-- Rempli par le JS -->
+                    </div>
+                </section>
+
+                <!-- SECTION PANIER (CAISSE) -->
+                <aside class="pos-panier">
+                    <h2>Panier</h2>
+                    <div id="panier-liste">
+                        <p style="color: #888; text-align: center; margin-top: 2rem;">Le panier est vide.</p>
+                    </div>
+                    
+                    <div class="panier-total">
+                        <div id="zone-credit" style="display: none; background: #fff3e0; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #ffe0b2;">
+                            <label style="display: block; font-weight: bold; margin-bottom: 0.5rem; color: #e65100;">Vente à crédit</label>
+                            <input type="text" id="nom-client" placeholder="Nom du client (ex: Moussa)" style="width: 100%; padding: 0.6rem; border: 1px solid #ffb74d; border-radius: 4px; margin-bottom: 0.5rem;">
+                            <label style="display: block; font-size: 0.85rem; margin-bottom: 0.3rem; color: #e65100;">Montant déjà payé (FCFA)</label>
+                            <input type="number" id="montant-paye" placeholder="0" style="width: 100%; padding: 0.6rem; border: 1px solid #ffb74d; border-radius: 4px;">
+                        </div>
+
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; cursor: pointer;">
+                            <input type="checkbox" id="toggle-credit" onchange="activerCredit()">
+                            <span style="font-weight: bold; color: var(--secondary);">C'est une vente à crédit ?</span>
+                        </label>
+
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>Total</span>
+                            <strong id="panier-total">0 FCFA</strong>
+                        </div>
+                        <button id="btn-valider-vente" class="btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem;" disabled>
+                            Encaisser la vente
+                        </button>
+                    </div>
+                </aside>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL REÇU DE CAISSE -->
+    <div id="modal-recu" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div style="margin-bottom: 1.5rem;">
+                <h2 style="color: var(--primary); margin-bottom: 0.2rem;">E-TOURÉ</h2>
+                <p style="font-size: 0.8rem; color: #888; margin: 0;">Reçu de vente</p>
+            </div>
+
+            <div style="text-align: left; font-size: 0.9rem; margin-bottom: 1rem;">
+                <p><strong>Date :</strong> <span id="recu-date"></span></p>
+                <p><strong>N° Ticket :</strong> #<span id="recu-id"></span></p>
+            </div>
+
+            <hr style="border: 0; border-top: 1px dashed #ccc; margin: 1rem 0;">
+
+            <div id="recu-lignes" style="text-align: left; font-size: 0.9rem;">
+                <!-- Les produits achetés s'afficheront ici -->
+            </div>
+
+            <hr style="border: 0; border-top: 1px dashed #ccc; margin: 1rem 0;">
+
+            <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold;">
+                <span>TOTAL</span>
+                <span id="recu-total" style="color: var(--primary);">0 FCFA</span>
+            </div>
+
+            <p style="font-size: 0.75rem; color: #888; margin-top: 1.5rem;">Merci de votre visite !</p>
+
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button type="button" class="btn-outline" onclick="fermerRecu()" style="flex: 1;">Fermer</button>
+                <button type="button" class="btn-primary" onclick="imprimerRecu()" style="flex: 1;">Imprimer</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="scanner-container" role="dialog" aria-modal="true" aria-labelledby="scanner-titre" style="display: none; position: fixed; inset: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; padding: 1rem;">
+        <h2 id="scanner-titre" style="color: white; margin-bottom: 1rem;">Scannez le code-barres</h2>
+        <div id="interactive" style="width: 100%; max-width: 500px; height: 300px; background: black; position: relative; overflow: hidden;"></div>
+        <p id="scanner-message" role="status" style="color: white; text-align: center; margin-top: 1rem;"></p>
+        <button type="button" onclick="fermerScanner()" class="btn-outline" style="margin-top: 1rem; border-color: white; color: white;">Annuler</button>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/offline.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+    <script src="js/ventes.js"></script>
+</body>
+</html>

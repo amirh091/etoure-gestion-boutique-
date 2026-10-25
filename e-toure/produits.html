@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-TOURÉ - Produits</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1A237E">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
+</head>
+<body>
+    <button class="menu-toggle-pro" onclick="toggleMenuPro()">☰</button>
+    <div class="app-container">
+        <!-- SIDEBAR (identique à index.html) -->
+        <aside class="sidebar" id="sidebar-pro">
+            <div class="logo"><img src="assets/logo-e-toure-light.svg" alt="E-TOURÉ — Votre commerce, maîtrisé."></div>
+            <nav>
+                <a href="index.html">📊 Dashboard</a>
+                <a href="produits.html" class="active">📦 Produits</a>
+                <a href="ventes.html">🛒 Point de Vente</a>
+                <a href="dettes.html">💰 Dettes</a>
+                <a href="rapports.html">📈 Rapports</a>
+                <a href="parametres.html">⚙️ Paramètres</a>
+                <a href="#" onclick="deconnexion()" style="color: #ff8a80; margin-top: auto;">🚪 Déconnexion</a>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <header>
+                <h1>Gestion des Produits</h1>
+                <button class="btn-primary" onclick="ouvrirModal()">+ Nouveau Produit</button>
+            </header>
+
+            <!-- TABLEAU DES PRODUITS -->
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nom du produit</th>
+                            <th>Prix (FCFA)</th>
+                            <th>Stock</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="liste-produits">
+                        <!-- Rempli par le JS -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL D'AJOUT DE PRODUIT -->
+    <div id="modal-produit" class="modal">
+        <div class="modal-content">
+            <h2>Ajouter un produit</h2>
+            <form id="form-produit">
+                <div class="form-group">
+                    <label for="nom">Nom du produit *</label>
+                    <input type="text" id="nom" required placeholder="Ex: Café, Savon, Pain...">
+                </div>
+                <div class="form-group">
+                    <label for="prix">Prix (FCFA) *</label>
+                    <input type="number" id="prix" required placeholder="Ex: 500">
+                </div>
+                <div class="form-group">
+                    <label for="stock">Stock initial *</label>
+                    <input type="number" id="stock" required value="0">
+                </div>
+                <div class="form-group">
+                    <label for="code-barres">Code-barres (Optionnel)</label>
+                    <input type="text" id="code-barres" placeholder="Ex: 1234567890123">
+                    <small style="color: var(--text-muted);">Scannez ou tapez le code-barres du produit.</small>
+                </div>
+                <div class="form-group">
+                    <label for="seuil">Seuil d'alerte (optionnel)</label>
+                    <input type="number" id="seuil" value="5" placeholder="Ex: 5 (alerte si stock <= 5)">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-outline" onclick="fermerModal()">Annuler</button>
+                    <button type="submit" class="btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/produits.js"></script>
+</body>
+</html>

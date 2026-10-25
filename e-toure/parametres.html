@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-TOURÉ - Paramètres</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1A237E">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
+</head>
+<body>
+    <button class="menu-toggle-pro" onclick="toggleMenuPro()">☰</button>
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar-pro">
+            <div class="logo"><img src="assets/logo-e-toure-light.svg" alt="E-TOURÉ — Votre commerce, maîtrisé."></div>
+            <nav>
+                <a href="index.html">📊 Dashboard</a>
+                <a href="produits.html">📦 Produits</a>
+                <a href="ventes.html">🛒 Point de Vente</a>
+                <a href="dettes.html">💰 Dettes</a>
+                <a href="rapports.html">📈 Rapports</a>
+                <a href="parametres.html" class="active">⚙️ Paramètres</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <h1>Paramètres</h1>
+            </header>
+
+            <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); max-width: 600px;">
+                <h2 style="margin-bottom: 1.5rem; color: var(--secondary);">Votre Profil</h2>
+                
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label>Adresse Email</label>
+                    <input type="text" id="param-email" disabled style="width: 100%; padding: 0.8rem; border: 1px solid #ccc; border-radius: 8px; background: #f9f9f9;">
+                </div>
+
+                <section style="background: #fff3e0; padding: 1rem; border-radius: 8px; border: 1px solid #ffe0b2;">
+                    <h2 style="margin-bottom: 0.5rem; color: #e65100;">Paiement Wave</h2>
+                    <p style="color: #666;">Pour votre abonnement Premium, vous pouvez payer sur l’un de ces numéros :</p>
+                    <p style="margin-top: 0.5rem; color: #666;">Titulaire : <strong>Touré Cheick Oumar</strong></p>
+                    <p style="margin-top: 0.5rem; font-weight: bold; color: var(--secondary);">0709133688</p>
+                    <p style="font-weight: bold; color: var(--secondary);">0170019733</p>
+                </section>
+
+                <h2 style="margin-top: 2rem; margin-bottom: 1.5rem; color: var(--secondary);">Sécurité</h2>
+                
+                <button class="btn-outline" style="width: 100%; margin-bottom: 1rem;" onclick="changerMotDePasse()">Changer mon mot de passe</button>
+                <button class="btn-primary" style="width: 100%; background: #d32f2f;" onclick="deconnexion()">Se déconnecter</button>
+
+                <h2 style="margin-top: 2rem; margin-bottom: 1.5rem; color: #d32f2f;">Zone de danger</h2>
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">Cette action supprimera toutes vos ventes, vos dettes et remettra vos stocks à 0. Vos produits et votre compte seront conservés.</p>
+                <button class="btn-outline" style="width: 100%; border-color: #d32f2f; color: #d32f2f;" onclick="reinitialiserDonnees()">
+                    ⚠️ Remettre les données à zéro
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await verifierConnexion();
+            if (!user) return;
+
+            await afficherBoutonAdmin(user);
+
+            document.getElementById('param-email').value = user.email;
+        });
+
+        async function changerMotDePasse() {
+            const nouvelEmail = prompt("Entrez votre email pour recevoir un lien de réinitialisation :");
+            if (nouvelEmail) {
+                const { error } = await supabaseClient.auth.resetPasswordForEmail(nouvelEmail);
+                if (error) alert("Erreur : " + error.message);
+                else alert("Un email de réinitialisation a été envoyé (vérifiez vos spams).");
+            }
+        }
+
+        async function deconnexion() {
+            await supabaseClient.auth.signOut();
+            window.location.href = 'connexion.html';
+        }
+
+        async function reinitialiserDonnees() {
+            try {
+                if (await estModeDemo()) {
+                    alert("Mode démo : La réinitialisation est désactivée.");
+                    return;
+                }
+            } catch (error) {
+                console.error("Impossible de vérifier le mode démo :", error);
+                alert("Impossible de vérifier les autorisations. La réinitialisation est annulée ; réessayez.");
+                return;
+            }
+
+            // 1. Double confirmation pour éviter les erreurs
+            const confirmation = confirm("Êtes-vous sûr de vouloir tout remettre à zéro ? Cette action est irréversible.");
+            if (!confirmation) return;
+
+            const confirmationFinale = prompt("Tapez 'EFFACER' pour confirmer la réinitialisation :");
+            if (confirmationFinale !== 'EFFACER') {
+                alert("Réinitialisation annulée.");
+                return;
+            }
+
+            const btn = document.querySelector('button[onclick="reinitialiserDonnees()"]');
+            btn.disabled = true;
+            btn.textContent = "Suppression en cours...";
+
+            // 2. Appeler la fonction SQL sécurisée
+            const { error } = await supabaseClient.rpc('reinitialiser_donnees');
+
+            if (error) {
+                console.error(error);
+                alert("Erreur lors de la réinitialisation : " + error.message);
+                btn.disabled = false;
+                btn.textContent = "⚠️ Remettre les données à zéro";
+            } else {
+                alert("Toutes vos données ont été remises à zéro avec succès.");
+                window.location.href = 'index.html'; // Retour au dashboard
+            }
+        }
+    </script>
+</body>
+</html>

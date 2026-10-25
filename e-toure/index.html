@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-TOURÉ - Tableau de bord</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- On inclut Chart.js pour le graphique plus tard -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1A237E">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+        <!-- Bouton Hamburger pour mobile -->
+    <button class="menu-toggle-pro" onclick="toggleMenuPro()">☰</button>
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar-pro">
+            <div class="logo"><img src="assets/logo-e-toure-light.svg" alt="E-TOURÉ — Votre commerce, maîtrisé."></div>
+            <nav>
+                <a href="index.html" class="active">📊 Dashboard</a>
+                <a href="produits.html">📦 Produits</a>
+                <a href="ventes.html">🛒 Point de Vente</a>
+                <a href="dettes.html">💰 Dettes</a>
+                <a href="rapports.html">📈 Rapports</a>
+                <a href="parametres.html">⚙️ Paramètres</a>
+                <a href="#" onclick="deconnexion()" style="color: #ff8a80; margin-top: auto;">🚪 Déconnexion</a>
+            </nav>
+            <div class="user-info">
+                <button onclick="deconnexion()" class="btn-logout">Déconnexion</button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <header>
+                <h1>Tableau de bord</h1>
+                <div class="dashboard-clock" aria-label="Date et heure">
+                    <time class="date-display" id="current-date"></time>
+                    <time class="date-display" id="current-heure"></time>
+                </div>
+            </header>
+
+            <div id="banniere-premium" style="display: none; background: #fff3e0; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #ffe0b2; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong style="color: #e65100;">⭐ Passez à E-TOURÉ Premium</strong><br>
+                    <small style="color: #ef6c00;">Produits illimités, ventes illimitées, et support prioritaire WhatsApp.</small><br>
+                    <small style="color: #ef6c00;">Paiement Wave — Touré Cheick Oumar : 0709133688 - 0170019733</small>
+                </div>
+                <a href="https://wa.me/2250700000000?text=Bonjour,%20je%20veux%20passer%20à%20E-TOURÉ%20Premium" target="_blank" rel="noopener noreferrer" class="btn-primary" style="text-decoration: none; padding: 0.5rem 1rem; font-size: 0.9rem;">Devenir Premium</a>
+            </div>
+
+            <!-- STATISTIQUES -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <h3>Ventes du jour</h3>
+                    <p class="stat-value" id="stat-ventes">0 FCFA</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Nombre de transactions</h3>
+                    <p class="stat-value" id="stat-transactions">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Produits en alerte</h3>
+                    <p class="stat-value" id="stat-alertes" style="color: #d32f2f;">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Dettes en cours</h3>
+                    <p class="stat-value" id="stat-dettes" style="color: #f39c12;">0 FCFA</p>
+                </div>
+            </section>
+
+            <!-- GRAPHIQUE -->
+            <section class="chart-section">
+                <h2>Ventes des 7 derniers jours</h2>
+                <canvas id="salesChart"></canvas>
+            </section>
+        </main>
+    </div>
+        <!-- Bibliothèque Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <!-- Votre script pour le dashboard -->
+    <script src="js/auth.js"></script>
+    <script src="js/offline.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

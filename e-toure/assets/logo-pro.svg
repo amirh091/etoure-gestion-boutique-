@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <!-- Fond bleu nuit avec coins arrondis -->
+  <rect width="100" height="100" rx="20" fill="#1A237E" />
+  
+  <!-- Un graphique en barres (symbole de gestion et de croissance) -->
+  <rect x="25" y="55" width="12" height="25" fill="#00BFA6" rx="2" />
+  <rect x="44" y="40" width="12" height="40" fill="#00BFA6" rx="2" />
+  <rect x="63" y="25" width="12" height="55" fill="#00BFA6" rx="2" />
+
+  <!-- Une flèche vers le haut (symbole de progression) -->
+  <path d="M 30 40 L 50 20 L 70 40" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M 50 20 L 50 50" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" />
+</svg>
